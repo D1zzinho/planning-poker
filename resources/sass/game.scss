@@ -1,0 +1,111 @@
+.vote-card {
+    width: 60px;
+    height: 100px;
+    margin: 0 10px;
+    font-size: 24px;
+    cursor: pointer;
+
+    .front, .back {
+        background: #fff;
+        border: 2px solid #0dcaf0;
+        border-radius: 6px;
+        color: #0dcaf0;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .front:hover {
+        transform: scale(1.2, 1.2);
+    }
+}
+
+
+.vote-card:not(.voted) .back::after {
+    content: "?";
+}
+
+.vote-card.voted .back {
+    background: linear-gradient(
+        90deg, rgb(34 24 212) 0%, rgb(99 99 202) 35%, rgba(0, 212, 255, 1) 100%);
+}
+
+/* Vote */
+.vote {
+    display: flex;
+    justify-content: center;
+
+    .vote-card .front {
+        background: #ffffee;
+        transition: transform 250ms;
+    }
+
+    .vote-card.active .front {
+        transform: translateY(-20px);
+        background: #0dcaf0;
+        color: #fff;
+    }
+}
+
+
+/* Participants votes */
+.votes {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: -20px;
+
+    .wrapper {
+        margin-bottom: 20px;
+    }
+
+    .wrapper .name {
+        text-align: center;
+    }
+
+    .vote-card {
+        position: relative;
+        /*width: 100%;*/
+        /*height: 100%;*/
+        text-align: center;
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+    }
+
+    .vote-card .front,
+    .vote-card .back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden; /* Safari */
+        backface-visibility: hidden;
+        top: 0;
+        left: 0;
+    }
+
+    .vote-card .front {
+        transform: rotateY(180deg);
+    }
+}
+
+.votes.show .vote-card {
+    transform: rotateY(180deg);
+}
+
+/* Show votes button */
+.votes-show button {
+    flex: 1 1 0px;
+    margin: 0 10px;
+    height: 100px;
+}
+
+#vote-result ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
