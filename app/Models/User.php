@@ -43,7 +43,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-
+    /**
+     * User can own many (has many) games relation.
+     *
+     * @return HasMany
+     */
     public function games(): HasMany
     {
         return $this->hasMany(Game::class);

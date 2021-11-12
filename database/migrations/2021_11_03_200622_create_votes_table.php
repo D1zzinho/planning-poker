@@ -21,8 +21,8 @@ class CreateVotesTable extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->
-                foreignId('game_id')
-                ->constrained('games')
+                foreignId('estimation_id')
+                ->constrained('estimations')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->unsignedSmallInteger('points');

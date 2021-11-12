@@ -2,6 +2,7 @@
 
 use App\Events\VoteEvent;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\LobbyController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -23,10 +24,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
 Route::group([
-    'prefix' => 'game'
+    'prefix' => 'lobby',
+    'middleware' => 'auth'
 ], function() {
-    Route::get('/', [GameController::class, 'index']);
+    Route::get('/', [LobbyController::class, 'index'])->name('lobby.index');
+    Route::get('/user-games', [GameController::class, 'getUserGamesByCurrentSession'])->name('game.user');
+    Route::post('/create-game', [GameController::class, 'startNewGame'])->name('game.create');
 });
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::group([
+    'prefix' => 'game',
+    'middleware' => 'auth'
+], function() {
+    Route::get('/', [GameController::class, 'index'])->name('game.index');
+    Route::get('/{hashId}', [GameController::class, 'viewSession'])->name('game.session');
+});

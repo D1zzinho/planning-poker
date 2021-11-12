@@ -14,25 +14,25 @@ class VoteEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $data;
+    public string $hashId;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($data)
+    public function __construct(string $hashId)
     {
-        $this->date = $data;
+        $this->hashId = $hashId;
     }
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return Channel|PresenceChannel|array
      */
-    public function broadcastOn()
+    public function broadcastOn(): Channel|PresenceChannel|array
     {
-        return new PresenceChannel('game');
+        return new PresenceChannel('game-' . $this->hashId);
     }
 }

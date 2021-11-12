@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
 
-        <game :user="{{ auth()->user() }}"></game>
+        <game :session="{{ $game }}" :user="{{ auth()->user() }}"></game>
 
     </div>
 @endsection

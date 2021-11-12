@@ -73,7 +73,8 @@
 <script>
 export default {
     props: [
-        'user'
+        'user',
+        'session'
     ],
 
     data() {
@@ -85,7 +86,7 @@ export default {
     },
 
     created() {
-        Echo.join('game')
+        Echo.join('game-' + this.session.hash_id)
             .here(user => {
                 this.users = user;
             })
