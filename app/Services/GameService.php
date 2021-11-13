@@ -8,21 +8,6 @@ class GameService
 {
 
     /**
-     * Create new game.
-     *
-     * @return array
-     */
-    public function createGame(): array
-    {
-        $game = auth()->user()->games()->create();
-
-        return [
-            'message' => 'Game successfully created',
-            'game' => $game
-        ];
-    }
-
-    /**
      * Find all games.
      *
      * @return Game[]
@@ -52,6 +37,21 @@ class GameService
     public function findGameByHashId(string $hashId): Game
     {
         return Game::whereHashId($hashId)->firstOrFail();
+    }
+
+    /**
+     * Create new game.
+     *
+     * @return array
+     */
+    public function createGame(): array
+    {
+        $game = auth()->user()->games()->create();
+
+        return [
+            'message' => 'Game successfully created',
+            'game' => $game
+        ];
     }
 
 }

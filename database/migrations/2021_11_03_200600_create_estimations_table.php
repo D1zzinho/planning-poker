@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Estimation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +21,9 @@ class CreateEstimationsTable extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->string('task', 30);
-            $table->unsignedSmallInteger('points');
+            $table->unsignedSmallInteger('points')->nullable();
+            $table->enum('status', Estimation::getAvailableEstimationStatuses())
+                ->default(Estimation::getEstimationStatus(0));
             $table->timestamps();
         });
     }

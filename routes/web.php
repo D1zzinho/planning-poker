@@ -1,6 +1,6 @@
 <?php
 
-use App\Events\VoteEvent;
+use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\LobbyController;
 use Illuminate\Support\Facades\Auth;
@@ -40,5 +40,14 @@ Route::group([
     'middleware' => 'auth'
 ], function() {
     Route::get('/', [GameController::class, 'index'])->name('game.index');
-    Route::get('/{hashId}', [GameController::class, 'viewSession'])->name('game.session');
+    Route::get('/{hashId}', [GameController::class, 'viewGameSession'])->name('game.session');
+
+    Route::group([
+        'prefix' => '/{hashId}/estimation'
+    ], function() {
+       Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
+       Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
+       Route::post('/', [EstimationController::class, 'startEstimation']);
+       Route::post('/{id}/finish', [EstimationController::class, 'closeEstimation']);
+    });
 });

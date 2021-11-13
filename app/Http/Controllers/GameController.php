@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\GameService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class GameController extends Controller
@@ -17,26 +16,28 @@ class GameController extends Controller
         $this->gameService = $gameService;
     }
 
-
     public function index()
     {
-        return view('game');
+        return redirect()->route('lobby.index');
     }
 
-    public function viewSession(string $hashId)
+    public function viewGameSession(string $hashId)
     {
         $game = $this->gameService->findGameByHashId($hashId);
         return view('game', ["game" => $game]);
     }
 
     /**
-     * Create new game.
+     * Create new game and return its data.
      *
-     * @return array
+     * @return JsonResponse
      */
-    public function startNewGame(): array
+    public function startNewGame(): JsonResponse
     {
-        return $this->gameService->createGame();
+        return response()->json(
+            $this->gameService->createGame(),
+            ResponseAlias::HTTP_CREATED
+        );
     }
 
     /**
@@ -46,9 +47,11 @@ class GameController extends Controller
      */
     public function getGames(): JsonResponse
     {
-        return response()->json($this->gameService->findGames(), ResponseAlias::HTTP_OK);
+        return response()->json(
+            $this->gameService->findGames(),
+            ResponseAlias::HTTP_OK
+        );
     }
-
 
     /**
      * Get all games created by currently authenticated user.
@@ -57,6 +60,9 @@ class GameController extends Controller
      */
     public function getUserGamesByCurrentSession(): JsonResponse
     {
-        return response()->json($this->gameService->findUserGamesByCurrentSession(), ResponseAlias::HTTP_OK);
+        return response()->json(
+            $this->gameService->findUserGamesByCurrentSession(),
+            ResponseAlias::HTTP_OK
+        );
     }
 }
