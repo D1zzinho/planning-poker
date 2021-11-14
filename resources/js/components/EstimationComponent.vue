@@ -161,7 +161,7 @@ export default {
             estimation: null,
             estimating: false,
             votes: [],
-            points: 5,
+            points: 5, // TODO estimation result calculation
             finished: false,
             errors: {}
         }
@@ -269,7 +269,7 @@ export default {
             }
         },
 
-        checkIfUserDidVote(userId) {
+        checkIfUserHasVoted(userId) {
             const index = this.votes.findIndex(vote => vote.user_id === userId);
             return index !== -1;
         },
