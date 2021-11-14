@@ -40,7 +40,7 @@
                         <div class="wrapper" v-for="user in users">
                             <div
                                 class="vote-card"
-                                v-bind:class="checkIfUserDidVote(user.id) ? 'voted' : ''"
+                                v-bind:class="checkIfUserHasVoted(user.id) ? 'voted' : ''"
                             >
                                 <div class="front"></div>
                                 <div class="back" v-bind:class="finished ? 'finished' : ''">
@@ -244,7 +244,7 @@ export default {
         async getVotesToEstimation(estimationId = this.estimation.id) {
             const response = await axios.get(`/vote/all-to-estimation/${estimationId}`);
             response.data.forEach(vote => {
-                this.checkIfUserDidVote(vote.user_id);
+                this.checkIfUserHasVoted(vote.user_id);
             });
             return response.data;
         },
