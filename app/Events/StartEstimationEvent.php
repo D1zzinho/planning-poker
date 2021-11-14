@@ -2,9 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Game;
-use App\Models\User;
-use Illuminate\Broadcasting\Channel;
+use App\Models\Estimation;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -15,18 +13,16 @@ class StartEstimationEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private string $hashId;
-    public int $userId;
+    public Estimation $estimation;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(string $hash_id, int $userId)
+    public function __construct(Estimation $estimation)
     {
-        $this->hashId = $hash_id;
-        $this->userId = $userId;
+        $this->estimation = $estimation;
     }
 
     /**
@@ -36,6 +32,6 @@ class StartEstimationEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PresenceChannel('game-' . $this->hashId);
+        return new PresenceChannel('game-' . $this->estimation->game->hash_id);
     }
 }

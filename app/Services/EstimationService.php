@@ -4,10 +4,9 @@ namespace App\Services;
 
 use App\Events\FinishEstimationEvent;
 use App\Events\StartEstimationEvent;
+use App\Http\Requests\StoreEstimationRequest;
 use App\Models\Estimation;
 use App\Models\Game;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
 class EstimationService
 {
@@ -25,13 +24,17 @@ class EstimationService
     /**
      * Find all estimations played during one session.
      *
-     * @param int $gameId
+     * @param string $hashId
      * @return array
      */
     public function findEstimationsByGameHashId(string $hashId): array
     {
         $game = Game::whereHashId($hashId)->firstOrFail();
-        return Estimation::whereGameId($game->id)->get()->toArray();
+
+        return Estimation::whereGameId($game->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(8)
+            ->toArray();
     }
 
     /**
@@ -48,22 +51,18 @@ class EstimationService
     /**
      * Create new estimation during session.
      *
+     * @param StoreEstimationRequest $request
      * @return Estimation
      */
-    public function createEstimation(string $hashId): Estimation
+    public function createEstimation(StoreEstimationRequest $request): Estimation
     {
-        $currentUserId = Auth::user()->id;
-        $gameId = request()->input('game_id');
-        $taskId = request()->input('task');
+        $validated = $request->safe()->only(['game_id', 'task']);
+        $validated['status'] = Estimation::getEstimationStatus(0);
 
-        $estimation = Estimation::create([
-            'game_id' => $gameId,
-            'task' => $taskId,
-            'status' => Estimation::getEstimationStatus(0)
-        ]);
+        $estimation = Estimation::create($validated);
         $estimation->load('game');
 
-        broadcast(new StartEstimationEvent($hashId, $currentUserId));
+        broadcast(new StartEstimationEvent($estimation));
 
         return $estimation;
     }

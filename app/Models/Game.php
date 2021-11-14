@@ -18,7 +18,8 @@ class Game extends Model
      */
     protected const GAME_STATUS = [
         'active',
-        'finished'
+        'estimating',
+        'closed'
     ];
 
     /**

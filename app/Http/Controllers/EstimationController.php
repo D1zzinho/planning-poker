@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEstimationRequest;
 use App\Services\EstimationService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -14,11 +15,6 @@ class EstimationController extends Controller
     public function __construct(EstimationService $estimationService)
     {
         $this->estimationService = $estimationService;
-    }
-
-    public function showEstimationBoard()
-    {
-        return view('estimation.board');
     }
 
     public function getEstimationsToGame(string $hashId): JsonResponse
@@ -37,10 +33,10 @@ class EstimationController extends Controller
         );
     }
 
-    public function startEstimation(string $hashId): JsonResponse
+    public function startEstimation(StoreEstimationRequest $request): JsonResponse
     {
         return response()->json(
-            $this->estimationService->createEstimation($hashId),
+            $this->estimationService->createEstimation($request),
             ResponseAlias::HTTP_CREATED
         );
     }

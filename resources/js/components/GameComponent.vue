@@ -1,14 +1,27 @@
 <template>
     <div class="row">
 
-        <div class="col-12">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     Active users
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item" v-for="user in users">{{ user.name }}</li>
+                    <li class="list-group-item d-flex" v-for="user in users">
+                        {{ user.name }} <span v-if="user.id === session.user_id" class="text-info ml-auto">owner</span>
+                    </li>
                 </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+
+                </div>
+                <div class="card-body">
+
+                </div>
             </div>
         </div>
 
@@ -23,8 +36,6 @@
 </template>
 
 <script>
-import EstimationComponent from './EstimationComponent'
-
 export default {
     props: [
         'user',
@@ -33,11 +44,14 @@ export default {
 
     data() {
         return {
+            isOwner: false,
             users: []
         }
     },
 
     created() {
+        this.checkIfUserIsGameOwner();
+
         Echo.join('game-' + this.session.hash_id)
             .here(user => {
                 this.users = user;
@@ -57,7 +71,9 @@ export default {
     },
 
     methods: {
-
+        checkIfUserIsGameOwner() {
+            this.isOwner = this.user.id === this.session.user_id;
+        }
     }
 }
 </script>
