@@ -25,7 +25,7 @@ class StoreEstimationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'game_id' => 'required',
+            'game_id' => 'required|numeric',
             'task' => 'required|min:3|max:30'
         ];
     }

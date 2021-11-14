@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\User;
+use App\Models\Vote;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -14,16 +14,16 @@ class VoteEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public string $hashId;
+    public Vote $vote;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(string $hashId)
+    public function __construct(Vote $vote)
     {
-        $this->hashId = $hashId;
+        $this->vote = $vote;
     }
 
     /**
@@ -33,6 +33,6 @@ class VoteEvent implements ShouldBroadcast
      */
     public function broadcastOn(): Channel|PresenceChannel|array
     {
-        return new PresenceChannel('game-' . $this->hashId);
+        return new PresenceChannel('game-' . $this->vote->estimation->game->hash_id);
     }
 }

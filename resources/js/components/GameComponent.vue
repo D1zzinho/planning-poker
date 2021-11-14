@@ -17,10 +17,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-
+                    TODO
                 </div>
                 <div class="card-body">
-
+                    TODO
                 </div>
             </div>
         </div>
@@ -30,6 +30,7 @@
             :user="user"
             :users="users"
             :session="session"
+            :isOwner="isOwner"
         ></estimation>
 
     </div>

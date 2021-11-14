@@ -10047,7 +10047,12 @@ h3 {
 }
 
 .vote-card.voted .back {
-  background: linear-gradient(90deg, #2218d4 0%, #6363ca 35%, #00d4ff 100%);
+  background: linear-gradient(90deg, #673ab7 0%, #6374ca 35%, #00b9ff 100%);
+}
+.vote-card.voted .back:not(.finished)::after {
+  content: "✓";
+  font-weight: bolder;
+  color: #48ff96;
 }
 
 /* Vote */
@@ -10071,25 +10076,19 @@ h3 {
   flex-direction: row;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: -20px;
-}
-.votes .wrapper {
-  margin-bottom: 20px;
 }
 .votes .wrapper .name {
   text-align: center;
+  margin-top: 5px;
 }
 .votes .vote-card {
   position: relative;
-  /*width: 100%;*/
-  /*height: 100%;*/
   text-align: center;
   transition: transform 0.8s;
   transform-style: preserve-3d;
   perspective: 1000px;
 }
-.votes .vote-card .front,
-.votes .vote-card .back {
+.votes .vote-card .front, .votes .vote-card .back {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -10099,7 +10098,7 @@ h3 {
   top: 0;
   left: 0;
 }
-.votes .vote-card .front {
+.votes .vote-card .front .front, .votes .vote-card .back .front {
   transform: rotateY(180deg);
 }
 
@@ -10109,9 +10108,8 @@ h3 {
 
 /* Show votes button */
 .votes-show button {
-  flex: 1 1 0px;
+  flex: 1 1 0;
   margin: 0 10px;
-  height: 100px;
 }
 
 #vote-result ul {

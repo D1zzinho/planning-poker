@@ -3,6 +3,7 @@
 use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\LobbyController;
+use App\Http\Controllers\VoteController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +30,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::group([
     'prefix' => 'lobby',
     'middleware' => 'auth'
-], function() {
+], function () {
     Route::get('/', [LobbyController::class, 'index'])->name('lobby.index');
     Route::get('/user-games', [GameController::class, 'getUserGamesByCurrentSession'])->name('game.user');
     Route::post('/create-game', [GameController::class, 'startNewGame'])->name('game.create');
@@ -38,16 +39,26 @@ Route::group([
 Route::group([
     'prefix' => 'game',
     'middleware' => 'auth'
-], function() {
+], function () {
     Route::get('/', [GameController::class, 'index'])->name('game.index');
     Route::get('/{hashId}', [GameController::class, 'viewGameSession'])->name('game.session');
 
     Route::group([
         'prefix' => '/{hashId}/estimation'
-    ], function() {
-       Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
-       Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
-       Route::post('/', [EstimationController::class, 'startEstimation']);
-       Route::post('/{id}/finish', [EstimationController::class, 'closeEstimation']);
+    ], function () {
+        Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
+        Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
+        Route::post('/', [EstimationController::class, 'startEstimation']);
+        Route::post('/{id}/finish', [EstimationController::class, 'closeEstimation']);
     });
+});
+
+Route::group([
+    'prefix' => 'vote',
+    'middleware' => 'auth'
+], function () {
+    Route::get('/', [VoteController::class, 'getVotes']);
+    Route::get('/all-to-user/{userId}', [VoteController::class, 'getVotesByUserId']);
+    Route::get('/all-to-estimation/{estimationId}', [VoteController::class, 'getVotesToEstimationByItsId']);
+    Route::post('/', [VoteController::class, 'sendVote']);
 });

@@ -14,7 +14,6 @@ class CreateVotesTable extends Migration
     public function up()
     {
         Schema::create('votes', function (Blueprint $table) {
-            $table->id();
             $table
                 ->foreignId('user_id')
                 ->constrained('users')
@@ -27,6 +26,8 @@ class CreateVotesTable extends Migration
                 ->onDelete('cascade');
             $table->unsignedSmallInteger('points');
             $table->timestamps();
+
+            $table->primary(['user_id', 'estimation_id']);
         });
     }
 

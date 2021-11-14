@@ -52,4 +52,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Game::class);
     }
+
+    /**
+     * Many users can vote in session during estimation.
+     *
+     * @return HasMany
+     */
+    public function votes(): HasMany
+    {
+        return $this->hasMany(Vote::class);
+    }
 }
