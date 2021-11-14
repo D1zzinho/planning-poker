@@ -142,7 +142,7 @@ import pagination from 'laravel-vue-pagination'
 export default {
     name: "EstimationComponent",
 
-    components:{
+    components: {
         pagination
     },
 
