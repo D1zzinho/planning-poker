@@ -15,17 +15,21 @@ class Estimation extends Model
     protected $fillable = [
         'game_id',
         'task',
+        'original_result',
         'points',
         'status'
     ];
 
-    protected $with = ['game'];
+    protected $with = [
+        'game'
+    ];
 
     /**
      * Estimation status.
      */
     protected const ESTIMATION_STATUS = [
         'open',
+        'finished',
         'closed'
     ];
 
@@ -47,7 +51,7 @@ class Estimation extends Model
     }
 
     /**
-     * Get available estimaion statuses, return its keys or values.
+     * Get available estimation statuses, return its keys or values.
      *
      * @param bool $keys If true, method returns type keys, otherwise type values.
      * @return array User type keys or values.

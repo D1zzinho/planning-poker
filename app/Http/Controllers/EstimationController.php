@@ -41,10 +41,18 @@ class EstimationController extends Controller
         );
     }
 
+    public function finishEstimation(string $hashId, int $id): JsonResponse
+    {
+        return response()->json(
+            $this->estimationService->finishEstimation($id),
+            ResponseAlias::HTTP_OK
+        );
+    }
+
     public function closeEstimation(string $hashId, int $id): JsonResponse
     {
         return response()->json(
-            $this->estimationService->finishEstimation($hashId, $id),
+            $this->estimationService->closeEstimation($id),
             ResponseAlias::HTTP_OK
         );
     }

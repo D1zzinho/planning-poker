@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Events\FinishEstimationEvent;
+use App\Events\UpdateEstimationEvent;
 use App\Events\StartEstimationEvent;
 use App\Http\Requests\StoreEstimationRequest;
 use App\Models\Estimation;
@@ -32,6 +32,7 @@ class EstimationService
         $game = Game::whereHashId($hashId)->firstOrFail();
 
         return Estimation::whereGameId($game->id)
+            ->with('votes')
             ->orderBy('created_at', 'desc')
             ->paginate(8)
             ->toArray();
@@ -68,24 +69,47 @@ class EstimationService
     }
 
     /**
-     * Update estimation status to closed and save story points.
+     * Update estimation status to finished and save story points.
      *
-     * @param string $hashId
      * @param int $estimationId
      * @return Estimation
      */
-    public function finishEstimation(string $hashId, int $estimationId): Estimation
+    public function finishEstimation(int $estimationId): Estimation
     {
-        $points = request()->input('points');
+        $validated = request()->validate([
+            'original_result' => 'required'
+        ]);
+        $validated['status'] = Estimation::getEstimationStatus(1);
 
-        $updatedEstimation = tap(Estimation::whereId($estimationId))
-            ->update([
-                'points' => $points,
-                'status' => Estimation::getEstimationStatus(1)
-            ])
-            ->first();
+        $estimation = Estimation::findOrFail($estimationId);
+        $estimation->update($validated);
+        $updatedEstimation = $estimation->refresh();
+        $updatedEstimation->load('votes');
 
-        broadcast(new FinishEstimationEvent($updatedEstimation));
+        broadcast(new UpdateEstimationEvent($updatedEstimation));
+
+        return $updatedEstimation;
+    }
+
+    /**
+     * Update estimation status to closed.
+     *
+     * @param int $estimationId
+     * @return Estimation
+     */
+    public function closeEstimation(int $estimationId): Estimation
+    {
+        $validated = request()->validate([
+            'points' => 'required|numeric'
+        ]);
+        $validated['status'] = Estimation::getEstimationStatus(2);
+
+        $estimation = Estimation::findOrFail($estimationId);
+        $estimation->update($validated);
+        $updatedEstimation = $estimation->refresh();
+        $updatedEstimation->load('votes');
+
+        broadcast(new UpdateEstimationEvent($updatedEstimation));
 
         return $updatedEstimation;
     }

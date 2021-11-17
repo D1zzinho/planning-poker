@@ -18,7 +18,7 @@ class EstimationPolicy
     }
 
     /**
-     * Check if user that made request, is owner of current game session.
+     * Check if user that made request is owner of game session.
      *
      * @param User $user
      * @return bool

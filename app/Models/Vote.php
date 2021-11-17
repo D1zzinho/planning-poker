@@ -16,22 +16,8 @@ class Vote extends Model
     ];
 
     protected $with = [
-        'user',
-        'estimation'
+        'user'
     ];
-
-    /**
-     * Overrides method in order to let model know, that it uses composite primary key.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function setKeysForSaveQuery($query): \Illuminate\Database\Eloquent\Builder
-    {
-        $query->where($this->getKeyName(), '=', $this->getKeyForSaveQuery());
-
-        return $query;
-    }
 
     public function user(): BelongsTo
     {

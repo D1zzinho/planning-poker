@@ -53,8 +53,7 @@ class VoteService
             'points' => 'required|numeric|min:1|max:13'
         ]);
 
-        dd(auth()->user()->votes()->create($validated));
-        $vote->load('estimation');
+        $vote = auth()->user()->votes()->create($validated);
 
         broadcast(new VoteEvent($vote));
 

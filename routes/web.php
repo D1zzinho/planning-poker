@@ -28,37 +28,39 @@ Route::get('/', function () {
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::group([
-    'prefix' => 'lobby',
     'middleware' => 'auth'
 ], function () {
-    Route::get('/', [LobbyController::class, 'index'])->name('lobby.index');
-    Route::get('/user-games', [GameController::class, 'getUserGamesByCurrentSession'])->name('game.user');
-    Route::post('/create-game', [GameController::class, 'startNewGame'])->name('game.create');
-});
-
-Route::group([
-    'prefix' => 'game',
-    'middleware' => 'auth'
-], function () {
-    Route::get('/', [GameController::class, 'index'])->name('game.index');
-    Route::get('/{hashId}', [GameController::class, 'viewGameSession'])->name('game.session');
+    Route::group([
+        'prefix' => 'lobby'
+    ], function () {
+        Route::get('/', [LobbyController::class, 'index'])->name('lobby.index');
+        Route::get('/user-games', [GameController::class, 'getUserGamesByCurrentSession'])->name('game.user');
+        Route::post('/create-game', [GameController::class, 'startNewGame'])->name('game.create');
+    });
 
     Route::group([
-        'prefix' => '/{hashId}/estimation'
+        'prefix' => 'game'
     ], function () {
-        Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
-        Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
-        Route::post('/', [EstimationController::class, 'startEstimation']);
-        Route::post('/{id}/finish', [EstimationController::class, 'closeEstimation']);
-    });
-});
+        Route::get('/', [GameController::class, 'index'])->name('game.index');
+        Route::get('/{hashId}', [GameController::class, 'viewGameSession'])->name('game.session');
 
-Route::group([
-    'prefix' => 'vote',
-    'middleware' => 'auth'
-], function () {
-    Route::get('/', [VoteController::class, 'getVotes']);
-    Route::get('/all-to-user/{userId}', [VoteController::class, 'getVotesByUserId']);
-    Route::get('/all-to-estimation/{estimationId}', [VoteController::class, 'getVotesToEstimationByItsId']);
-    Route::post('/', [VoteController::class, 'sendVote']);
+        Route::group([
+            'prefix' => '{hashId}/estimation'
+        ], function () {
+            Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
+            Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
+            Route::post('/', [EstimationController::class, 'startEstimation']);
+            Route::patch('/{id}/finish', [EstimationController::class, 'finishEstimation']);
+            Route::patch('/{id}/close', [EstimationController::class, 'closeEstimation']);
+        });
+    });
+
+    Route::group([
+        'prefix' => 'vote'
+    ], function () {
+        Route::get('/', [VoteController::class, 'getVotes']);
+        Route::get('/all-to-user/{userId}', [VoteController::class, 'getVotesByUserId']);
+        Route::get('/all-to-estimation/{estimationId}', [VoteController::class, 'getVotesToEstimationByItsId']);
+        Route::post('/', [VoteController::class, 'sendVote']);
+    });
 });

@@ -21,6 +21,7 @@ class CreateEstimationsTable extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->string('task', 30);
+            $table->unsignedFloat('original_result', 2, 1)->nullable();
             $table->unsignedSmallInteger('points')->nullable();
             $table->enum('status', Estimation::getAvailableEstimationStatuses())
                 ->default(Estimation::getEstimationStatus(0));

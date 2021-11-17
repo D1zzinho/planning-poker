@@ -4,7 +4,6 @@
 
         <div class="action-box mt-2" v-if="user.id === session.user_id">
             <input
-                v-if="!estimating"
                 id="jira-task-id-input"
                 class="form-control"
                 v-bind:class="errors && errors.task ? 'border-danger' : ''"
@@ -15,7 +14,7 @@
                 {{ errors.task[0] }}
             </div>
 
-            <button v-if="!estimating" class="btn btn-outline-info" @click="startEstimation">
+            <button class="btn btn-outline-info" @click="startEstimation">
                 Start estimation
             </button>
         </div>
@@ -26,31 +25,47 @@
             <div class="alert border-info my-3 d-flex" role="alert">
                 <span class="h3 text-info my-auto">Estimating task <strong>{{ estimation.task }}</strong></span>
                 <button
-                    v-if="estimation.status === 'open' && isOwner"
-                    class="btn btn-danger ml-auto"
-                    @click="finishEstimation"
+                    v-if="estimation.status === 'closed'"
+                    class="btn btn-outline-dark ml-auto"
+                    @click="estimation = null; estimating = false"
                 >
-                    Finish
+                    Hide
+                </button>
+                <button
+                    v-if="estimation.status !== 'closed' && isOwner"
+                    class="btn btn-danger ml-auto"
+                    @click="closeEstimation"
+                >
+                    Close
                 </button>
             </div>
 
             <div class="py-5 mb-2 mx-auto bg-light rounded-3">
                 <div class="container-fluid">
                     <div id="votes" class="votes">
-                        <div class="wrapper" v-for="user in users">
+                        <div v-if="estimation.status === 'open'" class="wrapper" v-for="user in users">
                             <div
                                 class="vote-card"
                                 v-bind:class="checkIfUserHasVoted(user.id) ? 'voted' : ''"
                             >
                                 <div class="front"></div>
-                                <div class="back" v-bind:class="finished ? 'finished' : ''">
-                                    <span class="text-light font-weight-bolder" v-if="finished">
-                                        {{ getUserVote(user.id) }}
-                                    </span>
-                                    <span v-else></span>
+                                <div class="back">
+                                    <span class="text-light font-weight-bolder"></span>
                                 </div>
                             </div>
                             <div class="name">{{ user.name }}</div>
+                        </div>
+
+                        <div v-if="estimation.status !== 'open'" class="wrapper" v-for="vote in estimation.votes">
+                            <div class="vote-card voted">
+                                <div class="front"></div>
+                                <div class="back finished">
+                                    <span class="text-light font-weight-bolder">
+                                        {{ vote.points }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="name">{{ vote.user.name }}</div>
                         </div>
                     </div>
                 </div>
@@ -59,23 +74,27 @@
             <div class="container-fluid mb-5">
                 <div class="votes-show text-center">
                     <div class="row">
-                        <div class="col-4" v-if="points !== null">
-                            Result
-                            <div id="vote-result">{{ points }}</div>
+                        <div class="col-4" v-if="estimation.points !== null">
+                            Result {{ estimation.points }}
                         </div>
+                        <div class="col-4" v-else-if="estimation.original_result !== null">
+                            Result {{ estimation.original_result }}
+                        </div>
+                        <div class="col-4" v-else></div>
+
                         <div class="col-4" v-if="isOwner">
                             <button
                                 type="button"
                                 class="btn btn-success"
-                                @click="showVotes"
-                                v-bind:disabled="this.users.length !== this.votes.length"
+                                @click="finishEstimation"
+                                v-bind:disabled="estimation.votes.length === 0 || estimation.status !== 'open'"
                             >Show votes</button>
                         </div>
                         <div class="col-4" v-if="isOwner">
                             <button
                                 type="button"
                                 class="btn btn-warning"
-                                v-bind:disabled="this.votes.length === 0"
+                                v-bind:disabled="estimation.votes.length === 0 || estimation.status !== 'finished'"
                             >Reset</button>
                         </div>
                     </div>
@@ -103,7 +122,7 @@
                 aria-expanded="false"
                 aria-controls="showEstimations"
             >
-                All estimations
+                Estimating history
             </button>
             <div class="collapse" id="showEstimations">
                 <div class="list-group" v-if="estimations && estimations.data.length > 0">
@@ -111,12 +130,10 @@
                         role="button"
                         class="list-group-item list-group-item-action"
                         v-for="estimate in estimations.data"
-                        v-bind:class="[
-                            estimate === estimation ? 'active' : estimate.status === 'closed' ? 'list-group-item-success' : ''
-                        ]"
+                        v-bind:class="getAlertStyleByEstimationStatus(estimate)"
                         @click="estimation = estimate; estimating = true"
                     >
-                        Estimation for {{ estimate.task }}
+                        Estimation {{ estimate.task }} finished at {{ formatDate(estimate.updated_at) }}
                     </a>
 
                     <pagination
@@ -156,45 +173,51 @@ export default {
     data() {
         return {
             possibleVotes: [1, 2, 3, 5, 8, 13],
-            estimations: {},
+            estimations: null,
             estimationsLoaded: false,
             estimation: null,
             estimating: false,
-            votes: [],
-            points: 5, // TODO estimation result calculation
+            points: 0,
             finished: false,
             errors: {}
         }
     },
 
     created() {
+        this.getEstimations();
+
         Echo.join(`game-${this.session.hash_id}`)
             .listen('StartEstimationEvent', res => {
                 if (res.estimation.game.user_id === this.session.user_id) {
+                    res.estimation.votes = [];
                     this.estimation = res.estimation;
                     this.estimating = true;
+                    this.getEstimations();
                 }
             })
-            .listen('FinishEstimationEvent', res => {
+            .listen('UpdateEstimationEvent', res => {
+                console.log(res);
                 if (res.estimation.game.user_id === this.session.user_id) {
-                    // const index = this.estimations.data.findIndex(estimate => estimate.id === event.estimation.id);
-                    // this.estimations.data[index] = event.estimation;
+                    this.estimation = res.estimation;
+                    this.finished = true;
                     this.getEstimations();
+                }
+            })
+            .listen('ReopenEstimateEvent', res => {
+                if (res.estimation.game.user_id === this.session.user_id) {
+                    this.estimation = res.estimation;
                 }
             })
             .listen('VoteEvent', res => {
                 if (res.vote) {
-                    const index = this.votes.findIndex(vote => {
+                    const index = this.estimation.votes.findIndex(vote => {
                         return vote.user_id === res.vote.user_id;
                     });
 
                     if (index === -1) {
-                        this.votes.push(res.vote);
+                        this.estimation.votes.push(res.vote);
                     }
                 }
-            })
-            .listenForWhisper('voting', response => {
-                this.votes = response;
             })
             .listenForWhisper('show-votes', response => {
                 this.finished = response;
@@ -202,7 +225,7 @@ export default {
     },
 
     mounted() {
-        this.getEstimations();
+
     },
 
     methods: {
@@ -210,14 +233,13 @@ export default {
             const response = await axios.get(`/game/${this.session.hash_id}/estimation?page=${page}`);
             this.estimations = response.data;
 
-            if (response.data.data.length > 0 && response.data.data[0].status === 'open') {
-                this.estimation = response.data.data[0];
-                this.estimating = true;
-                this.votes = await this.getVotesToEstimation();
-            } else {
-                this.estimation = null;
-                this.estimating = false;
-            }
+            // if (response.data.data.length > 0 && response.data.data[0].status !== 'closed') {
+            //    this.estimation = response.data.data[0];
+            //    this.estimating = true;
+            // } else {
+            //    this.estimation = null;
+            //    this.estimating = false;
+            // }
 
             this.estimationsLoaded = true;
         },
@@ -236,9 +258,27 @@ export default {
         },
 
         async finishEstimation() {
-            await axios.post(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/finish`, {
-                points: this.points
-            });
+            if (this.estimation.status === 'open') {
+                this.errors = {};
+                try {
+                    await axios.patch(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/finish`, {
+                        original_result: this.calculateResult()
+                    });
+                } catch (e) {
+                    this.errors = e.response.data.errors;
+                }
+            }
+        },
+
+        async closeEstimation() {
+            this.errors = {};
+            try {
+                await axios.patch(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/close`, {
+                    points: this.points
+                });
+            } catch (e) {
+                this.errors = e.response.data.errors;
+            }
         },
 
         async getVotesToEstimation(estimationId = this.estimation.id) {
@@ -250,7 +290,7 @@ export default {
         },
 
         async doVote(points = 1) {
-            const index = this.votes.findIndex(vote => {
+            const index = this.estimation.votes.findIndex(vote => {
                 return vote.user_id === this.user.id;
             });
 
@@ -261,8 +301,7 @@ export default {
                 }
                 try {
                     await axios.post(`/vote`, body);
-                    this.votes = await this.getVotesToEstimation();
-                    Echo.join(`game-${this.session.hash_id}`).whisper('voting', this.votes);
+                    // Echo.join(`game-${this.session.hash_id}`).whisper('voting', await this.getVotesToEstimation());
                 } catch (e) {
                     console.log(e);
                 }
@@ -270,20 +309,46 @@ export default {
         },
 
         checkIfUserHasVoted(userId) {
-            const index = this.votes.findIndex(vote => vote.user_id === userId);
+            const index = this.estimation.votes.findIndex(vote => vote.user_id === userId);
             return index !== -1;
         },
 
         getUserVote(userId) {
-            const index = this.votes.findIndex(vote => vote.user_id === userId);
-            return this.votes[index].points;
+            const index = this.estimation.votes.findIndex(vote => vote.user_id === userId);
+            return this.estimation.votes[index].points;
         },
 
-        showVotes() {
-            if (this.users.length === this.votes.length) {
-                this.finished = true;
-                Echo.join(`game-${this.session.hash_id}`).whisper('show-votes', this.finished);
+        getAlertStyleByEstimationStatus(estimate) {
+            if (this.estimation !== null && estimate.id === this.estimation.id) {
+                return 'active';
+            } else if (estimate.status === 'finished') {
+                return 'list-group-item-warning';
+            } else if (estimate.status === 'closed') {
+                return 'list-group-item-success';
             }
+
+            return '';
+        },
+
+        calculateResult() {
+            let sum = 0;
+            this.estimation.votes.forEach(vote => {
+                sum += vote.points;
+            });
+
+            return Math.round((sum / this.estimation.votes.length) * 10) / 10;
+        },
+
+        formatDate(dateToFormat) {
+            const date = new Date(dateToFormat);
+
+            const day = date.getDate() >= 10 ? date.getDate() : `0${date.getDate()}`;
+            const month = (date.getMonth() + 1) >= 10 ? (date.getMonth()+1) : `0${(date.getMonth()+1)}`;
+            const year = date.getFullYear();
+            const hour = date.getHours() >= 10 ? date.getHours() : `0${date.getHours()}`;
+            const min = date.getMinutes() >= 10 ? date.getMinutes() : `0${date.getMinutes()}`;
+
+            return day + "-" + month + "-" + year + " " + hour + ":" + min;
         }
     }
 }
