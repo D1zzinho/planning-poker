@@ -50,6 +50,7 @@ Route::group([
             Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
             Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
             Route::post('/', [EstimationController::class, 'startEstimation']);
+            Route::post('/{id}/reset', [EstimationController::class, 'restartEstimation']);
             Route::patch('/{id}/finish', [EstimationController::class, 'finishEstimation']);
             Route::patch('/{id}/close', [EstimationController::class, 'closeEstimation']);
         });

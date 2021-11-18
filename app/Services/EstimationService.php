@@ -34,7 +34,7 @@ class EstimationService
         return Estimation::whereGameId($game->id)
             ->with('votes')
             ->orderBy('created_at', 'desc')
-            ->paginate(8)
+            ->get()
             ->toArray();
     }
 
@@ -89,6 +89,24 @@ class EstimationService
         broadcast(new UpdateEstimationEvent($updatedEstimation));
 
         return $updatedEstimation;
+    }
+
+    public function resetEstimation(int $estimationId): Estimation
+    {
+        $status = Estimation::getEstimationStatus(0);
+        $estimation = Estimation::findOrFail($estimationId);
+        $estimation->votes()->delete();
+        $estimation->update([
+            'original_result' => null,
+            'status' => $status
+        ]);
+
+        $refreshedEstimation = $estimation->refresh();
+        $refreshedEstimation->load('votes');
+
+        broadcast(new UpdateEstimationEvent($refreshedEstimation));
+
+        return $refreshedEstimation;
     }
 
     /**

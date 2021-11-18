@@ -49,6 +49,14 @@ class EstimationController extends Controller
         );
     }
 
+    public function restartEstimation(string $hashId, int $id): JsonResponse
+    {
+        return response()->json(
+            $this->estimationService->resetEstimation($id),
+            ResponseAlias::HTTP_OK
+        );
+    }
+
     public function closeEstimation(string $hashId, int $id): JsonResponse
     {
         return response()->json(
