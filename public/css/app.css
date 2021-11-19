@@ -10028,7 +10028,7 @@ h3 {
   width: 60px;
   height: 100px;
   margin: 0 10px;
-  font-size: 24px;
+  font-size: 30px;
   cursor: pointer;
 }
 .vote-card .front, .vote-card .back {
@@ -10043,7 +10043,15 @@ h3 {
   align-items: center;
   justify-content: center;
 }
-.vote-card .front:hover {
+.vote-card .front.disabled {
+  opacity: 0.3;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+      user-select: none;
+}
+.vote-card .front:not(.disabled):hover {
   transform: scale(1.2, 1.2);
 }
 

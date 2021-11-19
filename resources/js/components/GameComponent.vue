@@ -2,7 +2,7 @@
     <div class="row">
 
         <estimation
-            class="col-md-8"
+            class="col-lg-8"
             :user="user"
             :users="users"
             :session="session"
@@ -12,7 +12,7 @@
             @update="estimation = $event.estimation; estimating = $event.estimating; getEstimations()"
         ></estimation>
 
-        <div class="col-md-4">
+        <div class="col-lg-4 mt-2 mt-lg-0">
             <div class="card">
                 <div class="card-header">
                     Active users
@@ -40,7 +40,7 @@
                         <a
                             role="button"
                             class="list-group-item list-group-item-action"
-                            v-for="estimate in estimations"
+                            v-for="estimate in getEstimationsPerPage"
                             v-bind:class="getColorStyleByEstimationStatus(estimate)"
                             @click="estimation = estimate; estimating = true"
                         >
@@ -50,16 +50,18 @@
                             </span>
                             <span v-else>in progress</span>
                         </a>
-
-                        <pagination
-                            v-model="page"
-                            :per-page="perPage"
-                            :records="estimations.length"
-                        />
                     </div>
                     <div v-else class="alert alert-warning">
                         No task is currently estimated in this session
                     </div>
+
+                    <pagination
+                        class="my-2"
+                        v-model="page"
+                        :per-page="perPage"
+                        :records="estimations.length"
+                        :options="paginateOptions"
+                    />
                 </div>
             </div>
         </div>
@@ -84,6 +86,10 @@ export default {
         return {
             page: 1,
             perPage: 8,
+            paginateOptions: {
+                chunk: 3,
+                chunksNavigation: 'fixed'
+            },
             users: [],
             isOwner: false,
             estimations: [],
@@ -111,15 +117,19 @@ export default {
             })
     },
 
+    computed: {
+        getEstimationsPerPage() {
+            const startIndex = this.perPage * (this.page - 1);
+            const endIndex = startIndex + this.perPage;
+            return this.estimations.slice(startIndex, endIndex);
+        }
+    },
+
     methods: {
         async getEstimations() {
             const response = await axios.get(`/game/${this.session.hash_id}/estimation`);
             this.estimations = response.data;
             this.estimationsLoaded = true;
-        },
-
-        updateEstimations(event) {
-            console.log(event)
         },
 
         getColorStyleByEstimationStatus(estimate) {

@@ -2,7 +2,7 @@
 
     <div class="estimations-box">
 
-        <div class="input-group mb-3 mt-3 mt-md-0">
+        <div class="input-group mt-3 mt-lg-0">
             <input
                 id="jira-task-id-input"
                 class="form-control"
@@ -10,16 +10,18 @@
                 type="text"
                 placeholder="Jira Task Id"
             />
-            <div class="text-danger form-error ml-1" v-if="errors && errors.task">
-                {{ errors.task[0] }}
+            <div class="input-group-append">
+                <button
+                    class="btn btn-outline-info"
+                    type="button"
+                    @click="startEstimation"
+                >
+                    Start
+                </button>
             </div>
-            <button
-                class="btn btn-outline-info"
-                type="button"
-                @click="startEstimation"
-            >
-                Start
-            </button>
+        </div>
+        <div class="text-danger form-error ml-1 mb-3" v-if="errors && errors.task">
+            {{ errors.task[0] }}
         </div>
 
         <div class="estimation-board" v-if="estimating">
@@ -77,15 +79,15 @@
             <div class="container-fluid mb-5">
                 <div class="votes-show text-center">
                     <div class="row">
-                        <div class="col-4" v-if="estimation.points !== null">
+                        <div class="col-4 border border-warning m-auto p-4" v-if="estimation.points !== null">
                             Result {{ estimation.points }}
                         </div>
-                        <div class="col-4" v-else-if="estimation.original_result !== null">
+                        <div class="col-4 border border-warning m-auto p-4" v-else-if="estimation.original_result !== null">
                             Result {{ estimation.original_result }}
                         </div>
-                        <div class="col-4" v-else></div>
+                        <div class="col-4 m-auto" v-else></div>
 
-                        <div class="col-4" v-if="isOwner">
+                        <div class="col-4 m-auto" v-if="isOwner">
                             <button
                                 type="button"
                                 class="btn btn-success"
@@ -93,7 +95,7 @@
                                 v-bind:disabled="estimation.votes.length === 0 || estimation.status !== 'open'"
                             >Show votes</button>
                         </div>
-                        <div class="col-4" v-if="isOwner">
+                        <div class="col-4 m-auto" v-if="isOwner">
                             <button
                                 type="button"
                                 class="btn btn-warning"
@@ -107,11 +109,10 @@
 
             <div class="container-fluid mb-5">
                 <div id="vote" class="vote">
-                    <div
-                        v-for="value in possibleVotes"
-                        class="vote-card"
-                        @click="doVote(value)">
-                        <div class="front">{{ value }}</div>
+                    <div v-for="value in possibleVotes" class="vote-card" @click="doVote(value)">
+                        <div class="front" v-bind:class="estimation.status !== 'open' ? 'disabled' : ''">
+                            {{ value }}
+                        </div>
                     </div>
                 </div>
             </div>
