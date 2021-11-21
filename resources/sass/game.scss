@@ -35,6 +35,10 @@
     .front:not(.disabled):hover {
         transform: scale(1.2, 1.2);
     }
+
+    .front.selected {
+        transform: scale(1.2, 1.2) !important;
+    }
 }
 
 
@@ -60,6 +64,7 @@
     .vote-card .front {
         background: #ffffee;
         transition: transform 250ms;
+        transform: skewY(15deg);
     }
 
     .vote-card.active .front {
@@ -109,18 +114,31 @@
     transform: rotateY(180deg);
 }
 
-/* Show votes button */
-.votes-show button {
-    flex: 1 1 0;
-    margin: 0 10px;
-}
-
 #vote-result ul {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
+.result-box {
+    margin: auto;
+}
+
 .form-error {
     font-size: 12px;
+}
+
+.VuePagination nav {
+    margin: auto;
+}
+
+.VuePagination__pagination {
+    margin: 0;
+    padding: 0;
+}
+
+.VuePagination__count {
+    margin: 0;
+    padding: 0;
+    display: none;
 }

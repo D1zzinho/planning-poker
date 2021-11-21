@@ -30,7 +30,6 @@
             <div class="alert border-info my-3 d-flex" role="alert">
                 <span class="h3 text-info my-auto">Estimating task <strong>{{ estimation.task }}</strong></span>
                 <button
-                    v-if="estimation.status === 'closed'"
                     class="btn btn-outline-dark ml-auto"
                     @click="hideEstimation"
                 >
@@ -38,7 +37,7 @@
                 </button>
                 <button
                     v-if="estimation.status === 'finished' && isOwner"
-                    class="btn btn-danger ml-auto"
+                    class="btn btn-danger ml-2"
                     @click="closeEstimation"
                 >
                     Close
@@ -79,11 +78,13 @@
             <div class="container-fluid mb-5">
                 <div class="votes-show text-center">
                     <div class="row">
-                        <div class="col-4 border border-warning m-auto p-4" v-if="estimation.points !== null">
-                            Result {{ estimation.points }}
+                        <div class="col-4 result-box" v-if="estimation.points !== null">
+                            <span>Result</span><br>
+                            <span class="h3">{{ estimation.points }}</span>
                         </div>
-                        <div class="col-4 border border-warning m-auto p-4" v-else-if="estimation.original_result !== null">
-                            Result {{ estimation.original_result }}
+                        <div class="col-4 result-box" v-else-if="estimation.original_result !== null">
+                            <span>Result</span><br>
+                            <span class="h3">{{ estimation.original_result }}</span>
                         </div>
                         <div class="col-4 m-auto" v-else></div>
 
@@ -108,7 +109,7 @@
             </div>
 
             <div class="container-fluid mb-5">
-                <div id="vote" class="vote">
+                <div class="vote">
                     <div v-for="value in possibleVotes" class="vote-card" @click="doVote(value)">
                         <div class="front" v-bind:class="estimation.status !== 'open' ? 'disabled' : ''">
                             {{ value }}
@@ -159,15 +160,13 @@ export default {
                 }
             })
             .listen('VoteEvent', res => {
-                if (res.vote) {
-                    const index = this.estimation.votes.findIndex(vote => {
-                        return vote.user_id === res.vote.user_id;
-                    });
-
-                    if (index === -1) {
-                        this.estimation.votes.push(res.vote);
-                    }
-                }
+                // const index = this.estimation.votes.findIndex(vote => {
+                //     return vote.user_id === res.vote.user_id;
+                // });
+                //
+                // if (index === -1) {
+                    this.$emit('push', res.vote);
+                // }
             })
     },
 
@@ -235,6 +234,7 @@ export default {
         },
 
         async doVote(points = 1) {
+            // const card = document.getElementById(`card_${points}`);
             const index = this.estimation.votes.findIndex(vote => {
                 return vote.user_id === this.user.id;
             });
@@ -246,6 +246,7 @@ export default {
                 }
                 try {
                     await axios.post(`/vote`, body);
+                    // card.classList.add('selected');
                 } catch (e) {
                     console.log(e);
                 }

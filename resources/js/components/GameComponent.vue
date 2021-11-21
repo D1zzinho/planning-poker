@@ -10,6 +10,7 @@
             :estimating="estimating"
             :isOwner="isOwner"
             @update="estimation = $event.estimation; estimating = $event.estimating; getEstimations()"
+            @push="pushVote($event)"
         ></estimation>
 
         <div class="col-lg-4 mt-2 mt-lg-0">
@@ -17,53 +18,69 @@
                 <div class="card-header">
                     Active users
                 </div>
-                <ul class="list-group list-group-flush">
+                <div class="spinner-border text-info my-2 mx-auto" role="status" v-if="!usersLoaded">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <ul class="list-group list-group-flush" v-else>
                     <li class="list-group-item d-flex" v-for="user in users">
                         {{ user.name }} <span v-if="user.id === session.user_id" class="text-info ml-auto">owner</span>
                     </li>
                 </ul>
             </div>
 
-            <div class="estimation-list mt-2" v-if="estimationsLoaded">
-                <button
-                    class="btn btn-primary my-2 w-100"
-                    type="button"
-                    data-toggle="collapse"
-                    data-target="#showEstimations"
-                    aria-expanded="false"
-                    aria-controls="showEstimations"
-                >
-                    Estimating history
-                </button>
-                <div class="collapse" id="showEstimations">
-                    <div class="list-group" v-if="estimations && estimations.length > 0">
+            <div class="accordion mt-4" id="estimation-list-accordion">
+                <div class="card">
+                    <div class="card-header">
                         <a
-                            role="button"
-                            class="list-group-item list-group-item-action"
-                            v-for="estimate in getEstimationsPerPage"
-                            v-bind:class="getColorStyleByEstimationStatus(estimate)"
-                            @click="estimation = estimate; estimating = true"
+                            href="javascript:void(0)"
+                            data-toggle="collapse"
+                            data-target="#estimations"
+                            aria-expanded="true"
+                            aria-controls="estimations"
                         >
-                            Estimation {{ estimate.task }}
-                            <span v-if="estimate.status !== 'open'">
-                                finished at {{ formatDate(estimate.updated_at) }}
-                            </span>
-                            <span v-else>in progress</span>
+                            List of estimations
                         </a>
                     </div>
-                    <div v-else class="alert alert-warning">
-                        No task is currently estimated in this session
-                    </div>
 
-                    <pagination
-                        class="my-2"
-                        v-model="page"
-                        :per-page="perPage"
-                        :records="estimations.length"
-                        :options="paginateOptions"
-                    />
+                    <div
+                        v-if="estimationsLoaded"
+                        id="estimations"
+                        class="collapse show"
+                        aria-labelledby="estimations"
+                        data-parent="#estimation-list-accordion"
+                    >
+                        <div class="list-group list-group-flush" v-if="estimations && estimations.length > 0">
+                            <a
+                                role="button"
+                                class="list-group-item list-group-item-action"
+                                v-for="estimate in getEstimationsPerPage"
+                                v-bind:class="getColorStyleByEstimationStatus(estimate)"
+                                @click="estimation = estimate; estimating = true"
+                            >
+                                Estimation {{ estimate.task }}
+                                <span v-if="estimate.status !== 'open'">
+                                    finished at {{ formatDate(estimate.updated_at) }}
+                                </span>
+                                <span v-else>in progress</span>
+                            </a>
+                        </div>
+
+                        <div class="card-footer">
+                            <pagination
+                                class="d-flex"
+                                v-model="page"
+                                :per-page="perPage"
+                                :records="estimations.length"
+                                :options="paginateOptions"
+                            />
+                        </div>
+                    </div>
+                    <div v-else class="spinner-border text-info my-2 mx-auto" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
             </div>
+
         </div>
 
     </div>
@@ -88,9 +105,15 @@ export default {
             perPage: 8,
             paginateOptions: {
                 chunk: 3,
-                chunksNavigation: 'fixed'
+                chunksNavigation: 'fixed',
+                texts: {
+                    count: '',
+                    first: '',
+                    last: ''
+                }
             },
             users: [],
+            usersLoaded: false,
             isOwner: false,
             estimations: [],
             estimation: null,
@@ -106,6 +129,7 @@ export default {
         Echo.join('game-' + this.session.hash_id)
             .here(user => {
                 this.users = user;
+                this.usersLoaded = true;
             })
             .joining(user => {
                 this.users.push(user);
@@ -130,6 +154,14 @@ export default {
             const response = await axios.get(`/game/${this.session.hash_id}/estimation`);
             this.estimations = response.data;
             this.estimationsLoaded = true;
+        },
+
+        pushVote(vote) {
+            this.getEstimations();
+
+            if (this.estimation.id === vote.estimation.id) {
+                this.estimation.votes.push(vote);
+            }
         },
 
         getColorStyleByEstimationStatus(estimate) {
