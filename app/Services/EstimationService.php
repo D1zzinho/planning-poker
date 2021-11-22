@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\UpdateEstimationEvent;
 use App\Events\StartEstimationEvent;
+use App\Http\Requests\CloseEstimationRequest;
 use App\Http\Requests\StoreEstimationRequest;
 use App\Models\Estimation;
 use App\Models\Game;
@@ -112,14 +113,14 @@ class EstimationService
     /**
      * Update estimation status to closed.
      *
-     * @param int $estimationId
+     * @param CloseEstimationRequest $request
      * @return Estimation
      */
-    public function closeEstimation(int $estimationId): Estimation
+    public function closeEstimation(CloseEstimationRequest $request): Estimation
     {
-        $validated = request()->validate([
-            'points' => 'required|numeric'
-        ]);
+        $estimationId = request()->route()->parameter('id');
+
+        $validated = $request->safe()->only(['points']);
         $validated['status'] = Estimation::getEstimationStatus(2);
 
         $estimation = Estimation::findOrFail($estimationId);

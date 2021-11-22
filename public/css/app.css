@@ -10024,6 +10024,13 @@ h3 {
     max-width: 1500px;
   }
 }
+.wrapper {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 .vote-card {
   width: 60px;
   height: 100px;
@@ -10064,6 +10071,7 @@ h3 {
 
 .vote-card.voted .back {
   background: linear-gradient(90deg, #673ab7 0%, #6374ca 35%, #00b9ff 100%);
+  cursor: default;
 }
 .vote-card.voted .back:not(.finished)::after {
   content: "✓";
@@ -10129,7 +10137,26 @@ h3 {
   padding: 0;
 }
 
-.result-box {
+.estimation-result {
+  padding: 20px 8px;
+  background: rgba(0, 20, 116, 0.75);
+  color: #fff;
+  border-radius: 45px;
+  width: 70px;
+  font-weight: 600;
+  margin: auto;
+  letter-spacing: 1px;
+}
+.estimation-result.final {
+  background: rgba(63, 170, 181, 0.9);
+}
+.estimation-result.points {
+  cursor: pointer;
+}
+.estimation-result.points .input {
+  max-height: 30px;
+  max-width: 45px;
+  padding: 3px;
   margin: auto;
 }
 

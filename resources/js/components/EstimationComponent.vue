@@ -2,26 +2,28 @@
 
     <div class="estimations-box">
 
-        <div class="input-group mt-3 mt-lg-0">
-            <input
-                id="jira-task-id-input"
-                class="form-control"
-                v-bind:class="errors && errors.task ? 'border-danger' : ''"
-                type="text"
-                placeholder="Jira Task Id"
-            />
-            <div class="input-group-append">
-                <button
-                    class="btn btn-outline-info"
-                    type="button"
-                    @click="startEstimation"
-                >
-                    Start
-                </button>
+        <div v-if="session.user_id === user.id">
+            <div class="input-group mt-3 mt-lg-0">
+                <input
+                    id="jira-task-id-input"
+                    class="form-control"
+                    v-bind:class="errors && errors.task ? 'border-danger' : ''"
+                    type="text"
+                    placeholder="Jira Task Id"
+                />
+                <div class="input-group-append">
+                    <button
+                        class="btn btn-outline-info"
+                        type="button"
+                        @click="startEstimation"
+                    >
+                        Start
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="text-danger form-error ml-1 mb-3" v-if="errors && errors.task">
-            {{ errors.task[0] }}
+            <div class="text-danger form-error ml-1 mb-3" v-if="errors && errors.task">
+                {{ errors.task[0] }}
+            </div>
         </div>
 
         <div class="estimation-board" v-if="estimating">
@@ -38,10 +40,47 @@
                 <button
                     v-if="estimation.status === 'finished' && isOwner"
                     class="btn btn-danger ml-2"
-                    @click="closeEstimation"
+                    v-b-modal.save-points
                 >
                     Close
                 </button>
+
+                <b-modal
+                    v-if="estimation.status === 'finished' && isOwner"
+                    id="save-points"
+                    centered
+                    title="Decide how many points and close estimation"
+                    ok-variant="success"
+                    cancel-variant="danger"
+                    body-bg-variant="light"
+                    @ok="handleCloseEstimation"
+                    @show="errors.points = null; isInputVisible = false"
+                    @hidden="errors.points = null; isInputVisible = false"
+                >
+                    <div class="text-center">
+                        <h3 class="estimation-result points">
+                            <span
+                                @click="isInputVisible = !isInputVisible"
+                                v-if="!isInputVisible"
+                            >
+                                {{ estimation.original_result }}
+                            </span>
+                            <input
+                                id="save-points-input"
+                                v-else
+                                v-bind:class="errors && errors.points ? 'border-danger' : ''"
+                                class="form-control input"
+                                type="number"
+                                min="1"
+                                max="13"
+                                v-bind:value="getClosestValue(estimation.original_result)"
+                            />
+                        </h3>
+                        <div class="text-danger form-error mt-2" v-if="errors && errors.points">
+                            {{ errors.points[0] }}
+                        </div>
+                    </div>
+                </b-modal>
             </div>
 
             <div class="py-5 mb-2 mx-auto bg-light rounded-3">
@@ -78,13 +117,11 @@
             <div class="container-fluid mb-5">
                 <div class="votes-show text-center">
                     <div class="row">
-                        <div class="col-4 result-box" v-if="estimation.points !== null">
-                            <span>Result</span><br>
-                            <span class="h3">{{ estimation.points }}</span>
+                        <div class="col-4 m-auto" v-if="estimation.points !== null">
+                            <h3 class="estimation-result final">{{ estimation.points }}</h3>
                         </div>
-                        <div class="col-4 result-box" v-else-if="estimation.original_result !== null">
-                            <span>Result</span><br>
-                            <span class="h3">{{ estimation.original_result }}</span>
+                        <div class="col-4 m-auto" v-else-if="estimation.original_result !== null">
+                            <h3 class="estimation-result">{{ estimation.original_result }}</h3>
                         </div>
                         <div class="col-4 m-auto" v-else></div>
 
@@ -139,8 +176,8 @@ export default {
     data() {
         return {
             possibleVotes: [1, 2, 3, 5, 8, 13],
-            points: 0, // TODO: Ask for final result then save it and close estimation.
             finished: false,
+            isInputVisible: false,
             errors: {}
         }
     },
@@ -160,13 +197,7 @@ export default {
                 }
             })
             .listen('VoteEvent', res => {
-                // const index = this.estimation.votes.findIndex(vote => {
-                //     return vote.user_id === res.vote.user_id;
-                // });
-                //
-                // if (index === -1) {
-                    this.$emit('push', res.vote);
-                // }
+                this.$emit('push', res.vote);
             })
     },
 
@@ -209,16 +240,31 @@ export default {
         },
 
         async closeEstimation() {
-            if (this.estimation.status === 'finished') {
-                this.errors = {};
-                try {
-                    await axios.patch(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/close`, {
-                        points: this.points
-                    });
-                } catch (e) {
-                    this.errors = e.response.data.errors;
+            this.errors = {};
+            const pointsInput = document.getElementById('save-points-input');
+            if (pointsInput) {
+                if (this.possibleVotes.includes(Number(pointsInput.value))) {
+                    try {
+                        await axios.patch(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/close`, {
+                            points: pointsInput.value
+                        });
+                        this.$nextTick(() => {
+                            this.$bvModal.hide('modal-prevent-closing');
+                        })
+                    } catch (e) {
+                        this.errors = e.response.data.errors;
+                    }
+                } else {
+                    this.errors = { points: ['Incorrect story point value.'] };
                 }
+            } else {
+                this.errors = { points: ['You have to click on result and save story points.'] };
             }
+        },
+
+        handleCloseEstimation(bvModalEvt) {
+            bvModalEvt.preventDefault();
+            this.closeEstimation();
         },
 
         hideEstimation() {
@@ -234,7 +280,6 @@ export default {
         },
 
         async doVote(points = 1) {
-            // const card = document.getElementById(`card_${points}`);
             const index = this.estimation.votes.findIndex(vote => {
                 return vote.user_id === this.user.id;
             });
@@ -246,7 +291,6 @@ export default {
                 }
                 try {
                     await axios.post(`/vote`, body);
-                    // card.classList.add('selected');
                 } catch (e) {
                     console.log(e);
                 }
@@ -261,6 +305,12 @@ export default {
         getUserVote(userId) {
             const index = this.estimation.votes.findIndex(vote => vote.user_id === userId);
             return this.estimation.votes[index].points;
+        },
+
+        getClosestValue(points) {
+            return this.possibleVotes.reduce((prev, curr) => {
+                return (Math.abs(curr - points) < Math.abs(prev - points) ? curr : prev);
+            });
         },
 
         calculateResult() {

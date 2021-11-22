@@ -4,6 +4,13 @@
     }
 }
 
+.wrapper {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 .vote-card {
     width: 60px;
     height: 100px;
@@ -48,6 +55,7 @@
 
 .vote-card.voted .back {
     background: linear-gradient(90deg, #673ab7 0%, #6374ca 35%, #00b9ff 100%);
+    cursor: default;
 
     &:not(.finished)::after {
         content: '\2713';
@@ -120,8 +128,30 @@
     padding: 0;
 }
 
-.result-box {
+.estimation-result {
+    padding: 20px 8px;
+    background: rgb(0 20 116 / 75%);
+    color: #fff;
+    border-radius: 45px;
+    width: 70px;
+    font-weight: 600;
     margin: auto;
+    letter-spacing: 1px;
+
+    &.final {
+        background: rgb(63 170 181 / 90%)
+    }
+
+    &.points {
+        cursor: pointer;
+
+        .input {
+            max-height: 30px;
+            max-width: 45px;
+            padding: 3px;
+            margin: auto;
+        }
+    }
 }
 
 .form-error {

@@ -16,7 +16,7 @@
         <div class="col-lg-4 mt-2 mt-lg-0">
             <div class="card">
                 <div class="card-header">
-                    Active users
+                    Room #{{ session.id }} - active users
                 </div>
                 <div class="spinner-border text-info my-2 mx-auto" role="status" v-if="!usersLoaded">
                     <span class="sr-only">Loading...</span>
@@ -159,7 +159,7 @@ export default {
         pushVote(vote) {
             this.getEstimations();
 
-            if (this.estimation.id === vote.estimation.id) {
+            if (this.estimation !== null && this.estimation.id === vote.estimation.id) {
                 this.estimation.votes.push(vote);
             }
         },

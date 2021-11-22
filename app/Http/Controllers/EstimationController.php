@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CloseEstimationRequest;
 use App\Http\Requests\StoreEstimationRequest;
 use App\Services\EstimationService;
 use Illuminate\Http\JsonResponse;
@@ -57,10 +58,10 @@ class EstimationController extends Controller
         );
     }
 
-    public function closeEstimation(string $hashId, int $id): JsonResponse
+    public function closeEstimation(CloseEstimationRequest $request): JsonResponse
     {
         return response()->json(
-            $this->estimationService->closeEstimation($id),
+            $this->estimationService->closeEstimation($request),
             ResponseAlias::HTTP_OK
         );
     }
