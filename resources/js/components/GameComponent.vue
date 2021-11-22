@@ -64,8 +64,9 @@
                                 <span v-else>in progress</span>
                             </a>
                         </div>
+                        <div v-else class="alert alert-warning mb-0">No estimations found.</div>
 
-                        <div class="card-footer">
+                        <div class="card-footer" v-if="estimations && estimations.length > 0">
                             <pagination
                                 class="d-flex"
                                 v-model="page"

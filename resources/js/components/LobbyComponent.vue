@@ -15,7 +15,7 @@
             <tbody>
                 <tr v-for="(game, index) in games" :key="index">
                     <th scope="col">{{ (index + 1) }}</th>
-                    <td>Game-{{ game.created_at }}</td>
+                    <td>Game-{{ new Date(game.created_at).getTime() }}</td>
                     <td>{{ game.status }}</td>
                     <td>
                         <a @click="openGame(game.hash_id)">Show</a>
@@ -46,10 +46,9 @@ export default {
     },
 
     methods: {
-        getGames() {
-            axios.get('/lobby/user-games').then(result => {
-                this.games = result.data;
-            })
+        async getGames() {
+            const response = await axios.get('/lobby/user-games');
+            this.games = response.data;
         },
 
         createGame() {
