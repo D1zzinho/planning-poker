@@ -43,6 +43,7 @@ Route::group([
     ], function () {
         Route::get('/', [GameController::class, 'index'])->name('game.index');
         Route::get('/{hashId}', [GameController::class, 'viewGameSession'])->name('game.session');
+        Route::patch('/{hashId}', [GameController::class, 'closeEstimatingRoom'])->name('game.close');
 
         Route::group([
             'prefix' => '{hashId}/estimation'

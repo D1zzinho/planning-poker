@@ -13,6 +13,8 @@ class Game extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['status'];
+
     /**
      * Game status.
      */

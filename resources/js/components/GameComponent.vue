@@ -1,5 +1,10 @@
 <template>
+
     <div class="row">
+
+        <div class="col-12 mb-2">
+            <b-breadcrumb :items="locations"></b-breadcrumb>
+        </div>
 
         <estimation
             class="col-lg-8"
@@ -13,10 +18,10 @@
             @push="pushVote($event)"
         ></estimation>
 
-        <div class="col-lg-4 mt-2 mt-lg-0">
+        <div class="col-lg-4 mt-3 mt-lg-0">
             <div class="card">
-                <div class="card-header">
-                    Room #{{ session.id }} - active users
+                <div class="card-header d-flex">
+                    <div class="mr-auto"></div> Room #{{ session.id }} - active users
                 </div>
                 <div class="spinner-border text-info my-2 mx-auto" role="status" v-if="!usersLoaded">
                     <span class="sr-only">Loading...</span>
@@ -28,7 +33,7 @@
                 </ul>
             </div>
 
-            <div class="accordion mt-4" id="estimation-list-accordion">
+            <div class="accordion mt-3" id="estimation-list-accordion">
                 <div class="card">
                     <div class="card-header">
                         <a
@@ -66,7 +71,7 @@
                         </div>
                         <div v-else class="alert alert-warning mb-0">No estimations found.</div>
 
-                        <div class="card-footer" v-if="estimations && estimations.length > 0">
+                        <div class="card-footer" v-if="estimations && estimations.length > perPage">
                             <pagination
                                 class="d-flex"
                                 v-model="page"
@@ -102,6 +107,20 @@ export default {
 
     data() {
         return {
+            locations: [
+                {
+                    text: 'Home',
+                    href: '/home'
+                },
+                {
+                    text: 'Lobby',
+                    href: '/lobby'
+                },
+                {
+                    text: `Game #${this.session.id}`,
+                    active: true
+                },
+            ],
             page: 1,
             perPage: 8,
             paginateOptions: {
@@ -127,7 +146,7 @@ export default {
         this.checkIfUserIsGameOwner();
         this.getEstimations();
 
-        Echo.join('game-' + this.session.hash_id)
+        Echo.join(`game-${this.session.hash_id}`)
             .here(user => {
                 this.users = user;
                 this.usersLoaded = true;

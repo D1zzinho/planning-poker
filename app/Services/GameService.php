@@ -23,9 +23,15 @@ class GameService
      *
      * @return Game[]
      */
-    public function findUserGamesByCurrentSession(): array
+    public function findUserGamesByActiveSession(): array
     {
-        return auth()->user()->games()->get()->toArray();
+        return auth()
+            ->user()
+            ->games()
+            ->with('estimations')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->toArray();
     }
 
     /**
@@ -47,6 +53,7 @@ class GameService
     public function createGame(): array
     {
         $game = auth()->user()->games()->create();
+        $game->load('estimations');
 
         return [
             'message' => 'Game successfully created',
@@ -54,4 +61,26 @@ class GameService
         ];
     }
 
+    /**
+     * Close estimating room (update status to closed).
+     *
+     * @param string $hashId
+     * @return Game
+     */
+    public function closeGame(string $hashId): Game
+    {
+        $status = Game::getGameStatus(1);
+        $game = Game::whereHashId($hashId)->firstOrFail();
+        $game->estimations()->update([
+            'status' => $status
+        ]);
+        $game->update([
+            'status' => $status
+        ]);
+
+        $updatedGame = $game->refresh();
+        $updatedGame->load('estimations');
+
+        return $updatedGame;
+    }
 }

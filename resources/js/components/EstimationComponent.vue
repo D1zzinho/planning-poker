@@ -3,7 +3,8 @@
     <div class="estimations-box">
 
         <div v-if="session.user_id === user.id">
-            <div class="input-group mt-3 mt-lg-0">
+            <h2>Start new estimation</h2>
+            <div class="input-group mt-lg-0">
                 <input
                     id="jira-task-id-input"
                     class="form-control"
@@ -27,9 +28,8 @@
         </div>
 
         <div class="estimation-board" v-if="estimating">
-
             <!-- TODO get data from jira api -->
-            <div class="alert border-info my-3 d-flex" role="alert">
+            <div class="alert border-info d-flex" role="alert" v-bind:class="session.user_id === user.id ? 'my-3' : ''">
                 <span class="h3 text-info my-auto">Estimating task <strong>{{ estimation.task }}</strong></span>
                 <button
                     class="btn btn-outline-dark ml-auto"
@@ -194,6 +194,25 @@ export default {
                 if (res.estimation.game.user_id === this.session.user_id) {
                     this.$emit('update', { estimation: res.estimation, estimating: true });
                     this.finished = res.estimation.status !== 'open';
+
+                    let messagePart;
+                    switch (res.estimation.status) {
+                        case 'open':
+                            messagePart = 'restarted';
+                            break;
+                        case 'finished':
+                            messagePart = 'finished';
+                            break;
+                        case 'closed':
+                            messagePart = 'closed';
+                            break;
+                    }
+
+                    this.makeToast(
+                        `Success`,
+                        `Estimation ${res.estimation.task} successfully ${messagePart}!`,
+                        'success'
+                    );
                 }
             })
             .listen('VoteEvent', res => {
@@ -320,6 +339,16 @@ export default {
             });
 
             return Math.round((sum / this.estimation.votes.length) * 10) / 10;
+        },
+
+        makeToast(title = '', message = '', type = null) {
+            this.$bvToast.toast(message, {
+                title: title,
+                toaster: 'b-toaster-bottom-right',
+                variant: type,
+                solid: true,
+                appendToast: true
+            });
         }
     }
 }

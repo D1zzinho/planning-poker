@@ -10021,9 +10021,18 @@ h3 {
 }
 @media (min-width: 1200px) {
   .container, .container-sm, .container-md, .container-lg, .container-xl {
-    max-width: 1500px;
+    max-width: 1400px;
   }
 }
+.table-holder {
+  max-width: 1400px;
+  overflow-x: auto;
+}
+
+.tight-col {
+  width: 10%;
+}
+
 .wrapper {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -10034,7 +10043,7 @@ h3 {
 .vote-card {
   width: 60px;
   height: 100px;
-  margin: 0 10px;
+  margin: 0 15px;
   font-size: 30px;
   cursor: pointer;
 }
@@ -10065,6 +10074,11 @@ h3 {
   transform: scale(1.2, 1.2) !important;
 }
 
+@media screen and (max-width: 767px) {
+  .vote-card {
+    margin: 0 5px;
+  }
+}
 .vote-card:not(.voted) .back::after {
   content: "?";
 }
@@ -10105,6 +10119,10 @@ h3 {
 .votes .wrapper .name {
   text-align: center;
   margin-top: 5px;
+  word-break: break-word;
+  max-width: 60px;
+  margin-right: auto;
+  margin-left: auto;
 }
 .votes .vote-card {
   position: relative;

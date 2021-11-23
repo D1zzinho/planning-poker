@@ -61,7 +61,21 @@ class GameController extends Controller
     public function getUserGamesByCurrentSession(): JsonResponse
     {
         return response()->json(
-            $this->gameService->findUserGamesByCurrentSession(),
+            $this->gameService->findUserGamesByActiveSession(),
+            ResponseAlias::HTTP_OK
+        );
+    }
+
+    /**
+     * Close game (update status to closed).
+     *
+     * @param string $hashId
+     * @return JsonResponse
+     */
+    public function closeEstimatingRoom(string $hashId): JsonResponse
+    {
+        return response()->json(
+            $this->gameService->closeGame($hashId),
             ResponseAlias::HTTP_OK
         );
     }
