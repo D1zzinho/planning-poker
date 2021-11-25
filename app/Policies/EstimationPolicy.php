@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Estimation;
 use App\Models\User;
-use App\Services\EstimationService;
 use App\Services\GameService;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -13,12 +12,15 @@ class EstimationPolicy
     use HandlesAuthorization;
 
     private GameService $gameService;
-    private EstimationService $estimationService;
 
-    public function __construct(GameService $gameService, EstimationService $estimationService)
+    /**
+     * DI of GameService to access stored information.
+     *
+     * @param GameService $gameService
+     */
+    public function __construct(GameService $gameService)
     {
         $this->gameService = $gameService;
-        $this->estimationService = $estimationService;
     }
 
     /**
@@ -29,22 +31,31 @@ class EstimationPolicy
      */
     public function startEstimation(User $user): bool
     {
-        $game = $this->gameService->findGameByHashId(request()->route()->parameter('hashId'))->firstOrFail();
+        $game = $this->gameService->findGameById(request()->input('game_id'));
         return $user->id === $game->user_id;
     }
 
+    /**
+     * Check if user is owner of game and estimation before finishing estimation.
+     *
+     * @param User $user
+     * @param Estimation $estimation
+     * @return bool
+     */
+    public function finishEstimation(User $user, Estimation $estimation): bool
+    {
+        return $user->id === $estimation->game->user_id;
+    }
 
     /**
      * Check if user is owner of game and estimation before closing estimation.
      *
      * @param User $user
+     * @param Estimation $estimation
      * @return bool
      */
-    public function finishEstimation(User $user): bool
+    public function closeEstimation(User $user, Estimation $estimation): bool
     {
-        $game = $this->gameService->findGameByHashId(request()->route()->parameter('hashId'))->firstOrFail();
-        $estimation = $this->estimationService->findEstimationById(request()->route()->parameter('id'));
-
-        return $user->id === $game->user_id && $user->id === $estimation->game->user_id;
+        return $user->id === $estimation->game->user_id;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Estimation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +14,7 @@ class CloseEstimationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('finishEstimation', Estimation::class);
+        return $this->user()->can('closeEstimation', $this->estimation);
     }
 
     /**

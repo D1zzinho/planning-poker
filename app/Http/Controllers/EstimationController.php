@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CloseEstimationRequest;
+use App\Http\Requests\FinishEstimationRequest;
 use App\Http\Requests\StoreEstimationRequest;
+use App\Models\Estimation;
 use App\Services\EstimationService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -18,7 +20,7 @@ class EstimationController extends Controller
         $this->estimationService = $estimationService;
     }
 
-    public function getEstimationsToGame(string $hashId): JsonResponse
+    public function getEstimationsByGameHashId(string $hashId): JsonResponse
     {
         return response()->json(
             $this->estimationService->findEstimationsByGameHashId($hashId),
@@ -42,18 +44,18 @@ class EstimationController extends Controller
         );
     }
 
-    public function finishEstimation(string $hashId, int $id): JsonResponse
+    public function finishEstimation(FinishEstimationRequest $request): JsonResponse
     {
         return response()->json(
-            $this->estimationService->finishEstimation($id),
+            $this->estimationService->finishEstimation($request),
             ResponseAlias::HTTP_OK
         );
     }
 
-    public function restartEstimation(string $hashId, int $id): JsonResponse
+    public function restartEstimation(Estimation $estimation): JsonResponse
     {
         return response()->json(
-            $this->estimationService->resetEstimation($id),
+            $this->estimationService->resetEstimation($estimation),
             ResponseAlias::HTTP_OK
         );
     }

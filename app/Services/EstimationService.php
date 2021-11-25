@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\UpdateEstimationEvent;
 use App\Events\StartEstimationEvent;
 use App\Http\Requests\CloseEstimationRequest;
+use App\Http\Requests\FinishEstimationRequest;
 use App\Http\Requests\StoreEstimationRequest;
 use App\Models\Estimation;
 use App\Models\Game;
@@ -47,7 +48,7 @@ class EstimationService
      */
     public function findEstimationById(int $id): Estimation
     {
-        return Estimation::findOrFail($id);
+        return Estimation::whereId($id)->with('votes')->firstOrFail();
     }
 
     /**
@@ -72,18 +73,17 @@ class EstimationService
     /**
      * Update estimation status to finished and save story points.
      *
-     * @param int $estimationId
+     * @param FinishEstimationRequest $request
      * @return Estimation
      */
-    public function finishEstimation(int $estimationId): Estimation
+    public function finishEstimation(FinishEstimationRequest $request): Estimation
     {
-        $validated = request()->validate([
-            'original_result' => 'required'
-        ]);
-        $validated['status'] = Estimation::getEstimationStatus(1);
+        $estimation = $request->estimation;
 
-        $estimation = Estimation::findOrFail($estimationId);
+        $validated = $request->safe()->only(['original_result']);
+        $validated['status'] = Estimation::getEstimationStatus(1);
         $estimation->update($validated);
+
         $updatedEstimation = $estimation->refresh();
         $updatedEstimation->load('votes');
 
@@ -92,10 +92,15 @@ class EstimationService
         return $updatedEstimation;
     }
 
-    public function resetEstimation(int $estimationId): Estimation
+    /**
+     * Reset estimation to initial state (no points and status open).
+     *
+     * @param Estimation $estimation
+     * @return Estimation
+     */
+    public function resetEstimation(Estimation $estimation): Estimation
     {
         $status = Estimation::getEstimationStatus(0);
-        $estimation = Estimation::findOrFail($estimationId);
         $estimation->votes()->delete();
         $estimation->update([
             'original_result' => null,
@@ -118,12 +123,10 @@ class EstimationService
      */
     public function closeEstimation(CloseEstimationRequest $request): Estimation
     {
-        $estimationId = request()->route()->parameter('id');
-
+        $estimation = $request->estimation;
         $validated = $request->safe()->only(['points']);
         $validated['status'] = Estimation::getEstimationStatus(2);
 
-        $estimation = Estimation::findOrFail($estimationId);
         $estimation->update($validated);
         $updatedEstimation = $estimation->refresh();
         $updatedEstimation->load('votes');

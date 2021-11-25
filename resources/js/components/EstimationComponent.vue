@@ -225,7 +225,7 @@ export default {
             this.errors = {};
             const jiraTaskId = document.getElementById('jira-task-id-input').value;
             try {
-                await axios.post(`/game/${this.session.hash_id}/estimation`, {
+                await axios.post(`/estimation`, {
                     game_id: this.session.id,
                     task: jiraTaskId
                 });
@@ -238,7 +238,7 @@ export default {
             if (this.estimation.status === 'open') {
                 this.errors = {};
                 try {
-                    await axios.patch(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/finish`, {
+                    await axios.patch(`/estimation/${this.estimation.id}/finish`, {
                         original_result: this.calculateResult()
                     });
                 } catch (e) {
@@ -251,7 +251,7 @@ export default {
             if (this.estimation.status !== 'closed') {
                 this.errors = {};
                 try {
-                    await axios.post(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/reset`);
+                    await axios.post(`/estimation/${this.estimation.id}/reset`);
                 } catch (e) {
                     this.errors = e.response.data.errors;
                 }
@@ -264,7 +264,7 @@ export default {
             if (pointsInput) {
                 if (this.possibleVotes.includes(Number(pointsInput.value))) {
                     try {
-                        await axios.patch(`/game/${this.session.hash_id}/estimation/${this.estimation.id}/close`, {
+                        await axios.patch(`/estimation/${this.estimation.id}/close`, {
                             points: pointsInput.value
                         });
                         this.$nextTick(() => {
