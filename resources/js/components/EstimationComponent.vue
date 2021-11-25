@@ -216,7 +216,7 @@ export default {
                 }
             })
             .listen('VoteEvent', res => {
-                this.$emit('push', res.vote);
+                this.$emit('push', res);
             })
     },
 
@@ -303,16 +303,19 @@ export default {
                 return vote.user_id === this.user.id;
             });
 
-            if (index === -1) {
-                const body = {
-                    estimation_id: this.estimation.id,
-                    points: points
-                }
-                try {
+            const body = {
+                estimation_id: this.estimation.id,
+                points: points
+            }
+
+            try {
+                if (index === -1) {
                     await axios.post(`/vote`, body);
-                } catch (e) {
-                    console.log(e);
+                } else {
+                    await axios.patch(`/vote/${this.estimation.votes[index].id}`, body);
                 }
+            } catch (e) {
+                this.errors = e.response.data.message;
             }
         },
 
@@ -344,7 +347,7 @@ export default {
         makeToast(title = '', message = '', type = null) {
             this.$bvToast.toast(message, {
                 title: title,
-                toaster: 'b-toaster-bottom-right',
+                toaster: window.innerWidth > 991 ? 'b-toaster-bottom-right' : 'b-toaster-bottom-center',
                 variant: type,
                 solid: true,
                 appendToast: true

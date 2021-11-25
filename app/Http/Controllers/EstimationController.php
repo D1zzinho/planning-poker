@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CloseEstimationRequest;
-use App\Http\Requests\FinishEstimationRequest;
-use App\Http\Requests\StoreEstimationRequest;
+use App\Http\Requests\Estimation\CloseEstimationRequest;
+use App\Http\Requests\Estimation\FinishEstimationRequest;
+use App\Http\Requests\Estimation\StoreEstimationRequest;
 use App\Models\Estimation;
 use App\Services\EstimationService;
 use Illuminate\Http\JsonResponse;

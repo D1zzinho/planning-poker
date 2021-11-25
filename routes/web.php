@@ -46,7 +46,6 @@ Route::group([
         Route::get('/', [GameController::class, 'index'])->name('game.index');
         Route::get('/{game}', [GameController::class, 'viewGameSession'])->name('game.session');
         Route::patch('/{game}', [GameController::class, 'closeEstimatingRoom'])
-//            ->can('closeEstimatingRoom', 'game')
             ->middleware(EnsureRoomEstimationsAreClosed::class)
             ->name('game.close');
         Route::get('{hashId}/estimations', [EstimationController::class, 'getEstimationsByGameHashId']);
@@ -67,6 +66,7 @@ Route::group([
     ], function () {
         Route::get('/', [VoteController::class, 'getVotes']);
         Route::post('/', [VoteController::class, 'sendVote']);
+        Route::patch('/{vote}', [VoteController::class, 'changeVote']);
         Route::get('/all-to-user/{userId}', [VoteController::class, 'getVotesByUserId']);
         Route::get('/all-to-estimation/{estimationId}', [VoteController::class, 'getVotesToEstimationByItsId']);
     });
