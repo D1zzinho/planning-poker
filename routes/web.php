@@ -4,8 +4,10 @@ use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\VoteController;
+use App\Http\Middleware\EnsureRoomEstimationsAreClosed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,27 +44,30 @@ Route::group([
         'prefix' => 'game'
     ], function () {
         Route::get('/', [GameController::class, 'index'])->name('game.index');
-        Route::get('/{hashId}', [GameController::class, 'viewGameSession'])->name('game.session');
-        Route::patch('/{hashId}', [GameController::class, 'closeEstimatingRoom'])->name('game.close');
+        Route::get('/{game}', [GameController::class, 'viewGameSession'])->name('game.session');
+        Route::patch('/{game}', [GameController::class, 'closeEstimatingRoom'])
+//            ->can('closeEstimatingRoom', 'game')
+            ->middleware(EnsureRoomEstimationsAreClosed::class)
+            ->name('game.close');
+        Route::get('{hashId}/estimations', [EstimationController::class, 'getEstimationsByGameHashId']);
+    });
 
-        Route::group([
-            'prefix' => '{hashId}/estimation'
-        ], function () {
-            Route::get('/', [EstimationController::class, 'getEstimationsToGame']);
-            Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
-            Route::post('/', [EstimationController::class, 'startEstimation']);
-            Route::post('/{id}/reset', [EstimationController::class, 'restartEstimation']);
-            Route::patch('/{id}/finish', [EstimationController::class, 'finishEstimation']);
-            Route::patch('/{id}/close', [EstimationController::class, 'closeEstimation']);
-        });
+    Route::group([
+        'prefix' => 'estimation'
+    ], function() {
+        Route::post('/', [EstimationController::class, 'startEstimation']);
+        Route::get('/{id}', [EstimationController::class, 'getEstimationById']);
+        Route::post('/{estimation}/reset', [EstimationController::class, 'restartEstimation']);
+        Route::patch('/{estimation}/finish', [EstimationController::class, 'finishEstimation']);
+        Route::patch('/{estimation}/close', [EstimationController::class, 'closeEstimation']);
     });
 
     Route::group([
         'prefix' => 'vote'
     ], function () {
         Route::get('/', [VoteController::class, 'getVotes']);
+        Route::post('/', [VoteController::class, 'sendVote']);
         Route::get('/all-to-user/{userId}', [VoteController::class, 'getVotesByUserId']);
         Route::get('/all-to-estimation/{estimationId}', [VoteController::class, 'getVotesToEstimationByItsId']);
-        Route::post('/', [VoteController::class, 'sendVote']);
     });
 });

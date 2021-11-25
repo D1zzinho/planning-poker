@@ -35,6 +35,17 @@ class GameService
     }
 
     /**
+     * Find game by id.
+     *
+     * @param int $id
+     * @return Game
+     */
+    public function findGameById(int $id): Game
+    {
+        return Game::findOrFail($id);
+    }
+
+    /**
      * Find game by hash_id property value.
      *
      * @param string $hashId
@@ -64,16 +75,13 @@ class GameService
     /**
      * Close estimating room (update status to closed).
      *
-     * @param string $hashId
+     * @param Game $game
      * @return Game
      */
-    public function closeGame(string $hashId): Game
+    public function closeGame(Game $game): Game
     {
         $status = Game::getGameStatus(1);
-        $game = Game::whereHashId($hashId)->firstOrFail();
-        $game->estimations()->update([
-            'status' => $status
-        ]);
+
         $game->update([
             'status' => $status
         ]);

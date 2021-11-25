@@ -124,7 +124,11 @@ export default {
                 );
                 await this.getGames();
             } catch (e) {
-                console.log(e.response.data.errors);
+                this.makeToast(
+                    'There was an error!',
+                    `${e.response.data.message}!`,
+                    'danger'
+                );
             }
         },
 

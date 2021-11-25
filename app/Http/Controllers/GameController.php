@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Game;
 use App\Services\GameService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -21,9 +22,8 @@ class GameController extends Controller
         return redirect()->route('lobby.index');
     }
 
-    public function viewGameSession(string $hashId)
+    public function viewGameSession(Game $game)
     {
-        $game = $this->gameService->findGameByHashId($hashId);
         return view('game', ["game" => $game]);
     }
 
@@ -69,13 +69,15 @@ class GameController extends Controller
     /**
      * Close game (update status to closed).
      *
-     * @param string $hashId
+     * @param Game $game
      * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function closeEstimatingRoom(string $hashId): JsonResponse
+    public function closeEstimatingRoom(Game $game): JsonResponse
     {
+        $this->authorize('closeEstimatingRoom', $game);
         return response()->json(
-            $this->gameService->closeGame($hashId),
+            $this->gameService->closeGame($game),
             ResponseAlias::HTTP_OK
         );
     }
