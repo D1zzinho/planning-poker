@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Estimation;
 use App\Models\Game;
+use App\Models\Vote;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -56,6 +57,10 @@ class RouteServiceProvider extends ServiceProvider
 
         Route::bind('estimation', function (int $id): Estimation {
             return Estimation::whereId($id)->with('game')->firstOrFail();
+        });
+
+        Route::bind('vote', function (int $id): Vote {
+            return Vote::findOrFail($id);
         });
     }
 

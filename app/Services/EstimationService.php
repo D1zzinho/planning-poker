@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Events\UpdateEstimationEvent;
 use App\Events\StartEstimationEvent;
-use App\Http\Requests\CloseEstimationRequest;
-use App\Http\Requests\FinishEstimationRequest;
-use App\Http\Requests\StoreEstimationRequest;
+use App\Http\Requests\Estimation\CloseEstimationRequest;
+use App\Http\Requests\Estimation\FinishEstimationRequest;
+use App\Http\Requests\Estimation\StoreEstimationRequest;
 use App\Models\Estimation;
 use App\Models\Game;
 

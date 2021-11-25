@@ -147,7 +147,7 @@ export default {
         makeToast(title = '', message = '', type = null) {
             this.$bvToast.toast(message, {
                 title: title,
-                toaster: 'b-toaster-bottom-right',
+                toaster: window.innerWidth > 991 ? 'b-toaster-bottom-right' : 'b-toaster-bottom-center',
                 variant: type,
                 solid: true,
                 appendToast: true

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\VoteEvent;
+use App\Http\Requests\Vote\UpdateVoteRequest;
 use App\Models\Vote;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,5 +59,24 @@ class VoteService
         broadcast(new VoteEvent($vote));
 
         return $vote;
+    }
+
+    /**
+     * Update vote - allows user to change points before estimation is finished.
+     *
+     * @param UpdateVoteRequest $request
+     * @return Vote
+     */
+    public function updateVote(UpdateVoteRequest $request): Vote
+    {
+        $vote = $request->vote;
+        $validated = $request->safe()->only(['points']);
+
+        $vote->update($validated);
+        $updatedVote = $vote->refresh();
+
+        broadcast(new VoteEvent($updatedVote, true));
+
+        return $updatedVote;
     }
 }

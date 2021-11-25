@@ -169,12 +169,6 @@ export default {
         }
     },
 
-    watch: {
-        estimation() {
-            console.log(this.estimation)
-        }
-    },
-
     methods: {
         async getEstimations() {
             const response = await axios.get(`/game/${this.session.hash_id}/estimations`);
@@ -182,11 +176,19 @@ export default {
             this.estimationsLoaded = true;
         },
 
-        pushVote(vote) {
+        pushVote(voteEvent) {
             this.getEstimations();
 
-            if (this.estimation !== null && this.estimation.id === vote.estimation.id) {
-                this.estimation.votes.push(vote);
+            if (this.estimation !== null && this.estimation.id === voteEvent.vote.estimation.id) {
+                if (voteEvent.update) {
+                    const index = this.estimation.votes.findIndex(vote => {
+                       return vote.id === voteEvent.vote.id;
+                    });
+
+                    this.estimation.votes[index] = voteEvent.vote;
+                } else {
+                    this.estimation.votes.push(voteEvent.vote);
+                }
             }
         },
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Vote\UpdateVoteRequest;
 use App\Services\VoteService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -57,5 +58,19 @@ class VoteController extends Controller
     public function sendVote(): JsonResponse
     {
         return response()->json($this->voteService->save(), ResponseAlias::HTTP_CREATED);
+    }
+
+    /**
+     * Update vote during one estimation.
+     *
+     * @param UpdateVoteRequest $request
+     * @return JsonResponse
+     */
+    public function changeVote(UpdateVoteRequest $request): JsonResponse
+    {
+        return response()->json(
+            $this->voteService->updateVote($request),
+            ResponseAlias::HTTP_OK
+        );
     }
 }

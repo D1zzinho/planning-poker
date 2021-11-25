@@ -15,15 +15,17 @@ class VoteEvent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Vote $vote;
+    public bool $update;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Vote $vote)
+    public function __construct(Vote $vote, bool $update = false)
     {
         $this->vote = $vote;
+        $this->update = $update;
     }
 
     /**
