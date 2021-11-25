@@ -7,7 +7,6 @@ use App\Http\Controllers\VoteController;
 use App\Http\Middleware\EnsureRoomEstimationsAreClosed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /*
 |--------------------------------------------------------------------------
