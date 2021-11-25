@@ -169,12 +169,6 @@ export default {
         }
     },
 
-    watch: {
-        estimation() {
-            console.log(this.estimation)
-        }
-    },
-
     methods: {
         async getEstimations() {
             const response = await axios.get(`/game/${this.session.hash_id}/estimations`);
